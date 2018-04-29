@@ -1,11 +1,15 @@
 from flask import Flask, render_template, request
+from pymongo import MongoClient
+import datetime
 
 app = Flask(__name__)
-
+dbclient = MongoClient()
+db = dbclient.request911
 
 @app.route('/d')
 def display():
     return render_template("display.html")
+
 
 @app.route('/p')
 def post():
@@ -15,6 +19,15 @@ def post():
     uas = request.user_agent.string
     ip = request.remote_addr
     print(latitude, longitude, accuracy, uas, ip)
+    req = {"lat": latitude,
+           "lon": longitude,
+           "acc": accuracy,
+           "uas": uas,
+           "ip": ip,
+           "timestamp": datetime.datetime.utcnow()
+           }
+    res = db.coords.insert_one(req).inserted_id
+    print("res = " + format(res))
     return ""
 
 
@@ -24,4 +37,5 @@ def mainpage():
 
 
 if __name__ == '__main__':
+
     app.run()

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for
 from flask_table import Table, Col
 from pymongo import MongoClient
 import datetime
@@ -45,6 +45,15 @@ class LocationTable(Table):
     lon = LatCol('Longitude')
     lat = LonCol('Latitude')
     acc = Col('Accuracy')
+    allow_sort = True
+
+    def sort_url(self, col_key, reverse=False):
+        if reverse:
+            direction =  'desc'
+        else:
+            direction = 'asc'
+        return url_for('display', sort=col_key, direction=direction)
+
 
 
 @app.route('/d')

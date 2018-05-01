@@ -6,14 +6,13 @@
 </head>
 <body>
 
-<p>Click the button to get your coordinates.</p>
+<p>Allow browser to get access to  your location!</p>
 
-<button onclick="getLocation()">Try It</button>
 
-<p id="demo"></p>
+<p id="placeholder"></p>
 
 <script>
-    var x = document.getElementById("demo");
+    var x = document.getElementById("placeholder");
 
     function getLocation() {
         if (navigator.geolocation) {
@@ -24,9 +23,9 @@
     }
 
     function showPosition(position) {
-        x.innerHTML = "Latitude: " + position.coords.latitude +
+        x.innerHTML = " Your location:<br>Latitude: " + position.coords.latitude +
             "<br>Longitude: " + position.coords.longitude +
-            "<br>Accuracy: " + position.coords.accuracy;
+            "<br>Accuracy: " + position.coords.accuracy + " meters";
 
         getAjax('/p?la=' + position.coords.latitude + '&lo=' + position.coords.longitude + '&acc=' + position.coords.accuracy, function (data) {
             console.log(data);

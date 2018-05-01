@@ -83,7 +83,7 @@ def display():
     yesterday = datetime.utcnow() - timedelta(days=1)
 
     items = []
-    for loc in db.coords.find({"timestamp": {"$lt": yesterday}}).sort(field, ASCENDING if direction else DESCENDING):
+    for loc in db.coords.find({"timestamp": {"$gt": yesterday}}).sort(field, ASCENDING if direction else DESCENDING):
         loc.update({'url': '<a href="https://www.google.com/maps/?q=' + loc['lat'] + ',' + loc['lon'] + '">Google</a>'})
         items.append(loc)
 

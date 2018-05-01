@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<p>Allow browser to get access to  your location!</p>
+<p>Allow browser to get access to your location!</p>
 
 
 <p id="placeholder"></p>
@@ -16,38 +16,67 @@
 
     function getLocation() {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition, showError);
+            navigator.geolocation.getCurrentPosition(showPosition, errorCallback_highAccuracy, {
+                maximumAge: 600000,
+                timeout: 10000,
+                enableHighAccuracy: true
+            });
+            navigator.geolocation.watchPosition(showPosition, errorCallback_highAccuracy, {
+                maximumAge: 600000,
+                timeout: 10000,
+                enableHighAccuracy: true
+            });
         } else {
             x.innerHTML = "Geolocation is not supported by this browser.";
         }
     }
 
+
+    function errorCallback_highAccuracy(error) {
+        if (error.code == error.TIMEOUT) {
+            // Attempt to get GPS loc timed out after 5 seconds,
+            // try low accuracy location
+            x.innerHTML = "attempting to get low accuracy location";
+            navigator.geolocation.getCurrentPosition(
+                showPosition,
+                errorCallback_lowAccuracy,
+                {maximumAge: 600000, timeout: 10000, enableHighAccuracy: false});
+            return;
+        }
+
+
+        var msg = "<p>Can't get your location (high accuracy attempt). Error = ";
+        if (error.code == 1)
+            msg += "PERMISSION_DENIED";
+        else if (error.code == 2)
+            msg += "POSITION_UNAVAILABLE";
+        msg += ", msg = " + error.message;
+
+        x.innerHTML = msg;
+    }
+
+    function errorCallback_lowAccuracy(error) {
+        var msg = "<p>Can't get your location (low accuracy attempt). Error = ";
+        if (error.code == 1)
+            msg += "PERMISSION_DENIED";
+        else if (error.code == 2)
+            msg += "POSITION_UNAVAILABLE";
+        else if (error.code == 3)
+            msg += "TIMEOUT";
+        msg += ", msg = " + error.message;
+
+        x.innerHTML = msg;
+    }
+
+
     function showPosition(position) {
         x.innerHTML = " Your location:<br>Latitude: " + position.coords.latitude +
             "<br>Longitude: " + position.coords.longitude +
-            "<br>Accuracy: " + position.coords.accuracy + " meters";
+            "<br>Accuracy: " + Math.floor(position.coords.accuracy) + " meters";
 
         getAjax('/p?la=' + position.coords.latitude + '&lo=' + position.coords.longitude + '&acc=' + position.coords.accuracy, function (data) {
             console.log(data);
         });
-    }
-
-
-    function showError(error) {
-        switch (error.code) {
-            case error.PERMISSION_DENIED:
-                x.innerHTML = "User denied the request for Geolocation."
-                break;
-            case error.POSITION_UNAVAILABLE:
-                x.innerHTML = "Location information is unavailable."
-                break;
-            case error.TIMEOUT:
-                x.innerHTML = "The request to get user location timed out."
-                break;
-            case error.UNKNOWN_ERROR:
-                x.innerHTML = "An unknown error occurred."
-                break;
-        }
     }
 
 
@@ -70,13 +99,6 @@
     else document.attachEvent('onreadystatechange', function () {
             if (document.readyState == 'complete') getLocation();
         });
-
-
-    // refresh each 10 sec
-
-    setTimeout(function () {
-        window.location.reload(1);
-    }, 10000);
 
 
 </script>

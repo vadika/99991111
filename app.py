@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, url_for
 from flask_table import Table, Col
 from pymongo import MongoClient, ASCENDING, DESCENDING
 import math
+import user_agents
 
 from datetime import timedelta, datetime
 
@@ -98,7 +99,7 @@ def post():
     latitude = request.args.get('la')
     longitude = request.args.get('lo')
     accuracy = request.args.get('acc')
-    uas = request.user_agent.platform + ' ' + request.user_agent.browser + ' ' + request.user_agent.version
+    uas = str(user_agents.parse(request.user_agent.string))
     ip = request.remote_addr
     print(latitude, longitude, accuracy, uas, ip)
     print(DecimaltoDMLa(latitude), DecimaltoDMLo(longitude))

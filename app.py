@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, url_for
 from flask_table import Table, Col
 from pymongo import MongoClient, ASCENDING, DESCENDING
+import math
 
-from datetime import date, timedelta, datetime
+from datetime import timedelta, datetime
 
 app = Flask(__name__)
 dbclient = MongoClient(maxPoolSize=None)
@@ -80,7 +81,7 @@ def display():
     if order == 'asc':
         direction = False
 
-    yesterday = datetime.utcnow() - timedelta(days=1)
+    yesterday = datetime.now() - timedelta(days=1)
 
     items = []
     for loc in db.coords.find({"timestamp": {"$gt": yesterday}}).sort(field, ASCENDING if direction else DESCENDING):
@@ -97,16 +98,16 @@ def post():
     latitude = request.args.get('la')
     longitude = request.args.get('lo')
     accuracy = request.args.get('acc')
-    uas = request.user_agent.string
+    uas = request.user_agent.platform + ' ' + request.user_agent.browser + ' ' + request.user_agent.version
     ip = request.remote_addr
     print(latitude, longitude, accuracy, uas, ip)
     print(DecimaltoDMLa(latitude), DecimaltoDMLo(longitude))
     req = {"lat": latitude,
            "lon": longitude,
-           "acc": accuracy,
+           "acc": math.floor(float(accuracy)),
            "uas": uas,
            "ip": ip,
-           "timestamp": datetime.utcnow()
+           "timestamp": datetime.now()
            }
     res = db.coords.insert_one(req).inserted_id
     print("res = " + format(res))

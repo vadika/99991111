@@ -5,7 +5,7 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from datetime import date, timedelta, datetime
 
 app = Flask(__name__)
-dbclient = MongoClient()
+dbclient = MongoClient(maxPoolSize=None)
 db = dbclient.request911
 
 

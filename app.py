@@ -3,6 +3,8 @@ from flask_table import Table, Col
 from pymongo import MongoClient, ASCENDING, DESCENDING
 import math
 import user_agents
+import urllib.request as urlreq
+import json
 
 from datetime import timedelta, datetime
 
@@ -85,7 +87,7 @@ def display():
     yesterday = datetime.now() - timedelta(days=1)
 
     items = []
-    for loc in db.coords.find({"timestamp": {"$gt": yesterday}}).sort(field, ASCENDING if direction else DESCENDING):
+    for loc in db.coords.find({"timestamp": {"$gt": yesterday}}).sort(field, DESCENDING if direction else ASCENDING):
         loc.update({'url': '<a href="https://www.google.com/maps/?q=' + loc['lat'] + ',' + loc['lon'] + '">Google</a>'})
         items.append(loc)
 
@@ -110,6 +112,9 @@ def post():
            "ip": ip,
            "timestamp": datetime.now()
            }
+    ipapi = urlreq.Request(url="http://ip-api.com/json/" + ip, method="GET")
+    isp = json.loads(urlreq.urlopen(ipapi).read().decode())
+    req["ip"] = (ip + " " + isp['org'] + " " + isp['isp']) if isp['status'] == 'success' else (ip + ' None')
     res = db.coords.insert_one(req).inserted_id
     print("res = " + format(res))
     return ""
